@@ -15,6 +15,8 @@ This repository contains performance tests for various AWS S3 transfer methods, 
 | Standard S3 Direct            | 7.00                | 440.24          | 7.58                   | 406.64            |
 | S3 Transfer Manager           | 4.68                | 658.62          | 7.26                   | 425.03            |
 | S3 CRT Client                 | 6.38                | 483.19          | 30.90                  | 99.78             |
+| Optimized S3 (No Acceleration)| 35.42               | 87.06           | 31.64                  | 97.45             |
+| Optimized S3 (With Acceleration)| 34.60             | 89.11           | 48.67                  | 63.35             |
 | AWS DataSync (simulated)      | 15.00               | 205.57          | 18.00                  | 171.31            |
 | Previous best S3 method       | 8.63                | -               | 9.62                   | -                 |
 
@@ -62,6 +64,42 @@ The S3 CRT (Common Runtime) client uses AWS's optimized C++ implementation for S
 - 307.65% faster than standard S3 direct download
 - 325.68% faster than S3 Transfer Manager
 
+### Optimized S3 Transfer (Without Acceleration)
+
+This method combines optimized configuration settings with the boto3 S3 client.
+
+**Upload Performance**:
+- Speed: 35.42 MB/s
+- Duration: 87.06 seconds (1.45 minutes)
+- 405.99% faster than standard S3 direct upload
+- 455.16% faster than S3 CRT Client
+- 136.13% faster than simulated DataSync
+
+**Download Performance**:
+- Speed: 31.64 MB/s
+- Duration: 97.45 seconds (1.62 minutes)
+- 317.47% faster than standard S3 direct download
+- 2.41% faster than S3 CRT Client
+- 75.80% faster than simulated DataSync
+
+### Optimized S3 Transfer (With Acceleration)
+
+This method combines optimized configuration settings with S3 Transfer Acceleration.
+
+**Upload Performance**:
+- Speed: 34.60 MB/s
+- Duration: 89.11 seconds (1.49 minutes)
+- 394.33% faster than standard S3 direct upload
+- 442.37% faster than S3 CRT Client
+- 130.69% faster than simulated DataSync
+
+**Download Performance**:
+- Speed: 48.67 MB/s
+- Duration: 63.35 seconds (1.06 minutes)
+- 542.14% faster than standard S3 direct download
+- 57.52% faster than S3 CRT Client
+- 170.41% faster than simulated DataSync
+
 ### AWS DataSync (Simulated)
 
 AWS DataSync performance was simulated based on AWS documentation and benchmarks.
@@ -87,49 +125,75 @@ AWS DataSync performance was simulated based on AWS documentation and benchmarks
 
 ### Upload Performance Analysis
 
-1. **AWS DataSync** offers the best upload performance at 15.00 MB/s, which is significantly faster than all other tested methods.
-2. **Previous best S3 method** (accelerated_multipart_upload) comes in second at 8.63 MB/s.
-3. **Standard S3 Direct** upload performs reasonably well at 7.00 MB/s.
-4. **S3 CRT Client** provides moderate upload performance at 6.38 MB/s.
-5. **S3 Transfer Manager** has the slowest upload performance at 4.68 MB/s.
+1. **Optimized S3 (No Acceleration)** delivers the best upload performance at 35.42 MB/s, significantly outperforming all other methods.
+2. **Optimized S3 (With Acceleration)** is a close second at 34.60 MB/s, showing that local network conditions may sometimes make acceleration unnecessary.
+3. **AWS DataSync** offers good upload performance at 15.00 MB/s.
+4. **Previous best S3 method** (accelerated_multipart_upload) achieves 8.63 MB/s.
+5. **Standard S3 Direct** upload performs at 7.00 MB/s.
+6. **S3 CRT Client** provides moderate upload performance at 6.38 MB/s.
+7. **S3 Transfer Manager** has the slowest upload performance at 4.68 MB/s.
 
 ### Download Performance Analysis
 
-1. **S3 CRT Client** delivers exceptional download performance at 30.90 MB/s, outperforming all other methods by a significant margin.
-2. **AWS DataSync** provides strong download performance at 18.00 MB/s, but is notably slower than the CRT client.
-3. **Previous best S3 method** (direct_memory_download) achieves 9.62 MB/s.
-4. **Standard S3 Direct** download performs at 7.58 MB/s.
-5. **S3 Transfer Manager** has similar download performance to standard S3 at 7.26 MB/s.
+1. **Optimized S3 (With Acceleration)** delivers exceptional download performance at 48.67 MB/s, outperforming all other methods.
+2. **Optimized S3 (No Acceleration)** and **S3 CRT Client** provide similar performance at 31.64 MB/s and 30.90 MB/s respectively.
+3. **AWS DataSync** provides good download performance at 18.00 MB/s.
+4. **Previous best S3 method** (direct_memory_download) achieves 9.62 MB/s.
+5. **Standard S3 Direct** download performs at 7.58 MB/s.
+6. **S3 Transfer Manager** has similar download performance to standard S3 at 7.26 MB/s.
 
 ## Recommendations
 
 Based on the performance tests, we recommend:
 
-1. **For download-heavy workloads**: Use the S3 CRT Client, which provides exceptional download performance (30.90 MB/s).
+1. **For all workloads**: Use the Optimized S3 Transfer configuration, which provides the best overall performance for both uploads and downloads.
+   - For downloads, enable S3 Transfer Acceleration for an additional 54% speed improvement
+   - For uploads, acceleration may not provide significant benefits in all network environments
 
-2. **For upload-heavy workloads**: Consider AWS DataSync, which offers the best upload performance (15.00 MB/s).
+2. **For download-heavy workloads**: Use Optimized S3 Transfer with Acceleration, which provides exceptional download performance (48.67 MB/s).
 
-3. **For balanced workloads**:
-   - If download speed is more critical: Use the S3 CRT Client
-   - If upload speed is more critical: Use AWS DataSync
+3. **For upload-heavy workloads**: Use Optimized S3 Transfer without Acceleration, which offers the best upload performance (35.42 MB/s).
 
-4. **For simplicity with reasonable performance**: Standard S3 Direct transfer provides decent performance for both uploads and downloads without requiring additional configuration.
+4. **For balanced workloads**: Use Optimized S3 Transfer with Acceleration, which provides excellent performance for both uploads (34.60 MB/s) and downloads (48.67 MB/s).
 
 ## Implementation Notes
 
-### S3 CRT Client
+### Optimized S3 Transfer Configuration
 
-The S3 CRT Client showed some connection pool warnings during testing, which suggests that the high concurrency setting (20) might be pushing the limits of the available connections. Consider adjusting concurrency settings based on your specific environment.
+The optimized S3 transfer configuration uses the following settings:
 
 ```python
-# Configure the transfer with optimized settings for CRT
+# Create a boto3 client with optimized settings
+s3_config = Config(
+    region_name='us-east-1',
+    signature_version='s3v4',
+    retries={
+        'max_attempts': 10,
+        'mode': 'adaptive'  # Use adaptive retry mode
+    },
+    s3={
+        'use_accelerate_endpoint': True,  # Enable Transfer Acceleration
+        'addressing_style': 'virtual',
+        'payload_signing_enabled': False,
+    }
+)
+
+# Configure the transfer with optimized settings
 transfer_config = TransferConfig(
-    multipart_threshold=8 * 1024 * 1024,  # 8 MB
-    max_concurrency=20,  # Higher concurrency for CRT
-    multipart_chunksize=16 * 1024 * 1024,  # 16 MB chunks
+    multipart_threshold=25 * 1024 * 1024,  # 25 MB
+    max_concurrency=15,                    # 15 concurrent threads for uploads
+    max_concurrency=20,                    # 20 concurrent threads for downloads
+    multipart_chunksize=25 * 1024 * 1024,  # 25 MB chunks
     use_threads=True
 )
 ```
+
+### Connection Pool Warnings
+
+During testing with high concurrency settings, some "Connection pool is full" warnings were observed. These warnings indicate that the connection pool is being fully utilized, which is expected with high concurrency settings. These warnings don't necessarily indicate a problem, but if they become frequent, consider:
+
+1. Adjusting the concurrency settings to a slightly lower value
+2. Increasing the connection pool size if your environment allows it
 
 ### AWS DataSync
 
@@ -143,8 +207,9 @@ For actual AWS DataSync implementation (not simulated), you would need to:
 1. Test with different file sizes to determine optimal settings for each transfer method
 2. Implement and test actual AWS DataSync (not simulated)
 3. Explore network optimization to improve upload speeds
-4. Test with different concurrency settings for the S3 CRT Client
-5. Test with S3 Transfer Acceleration enabled
+4. Test with different concurrency settings for the optimized configuration
+5. Test with different chunk sizes to find the optimal balance
+6. Test in different network environments and regions
 
 ## Test Scripts
 
@@ -152,6 +217,7 @@ The repository includes the following test scripts:
 - `datasync_performance_test.py`: Tests standard S3 transfers and simulates DataSync performance
 - `s3_transfer_manager_test.py`: Tests the S3 Transfer Manager
 - `s3_crt_test.py`: Tests the S3 CRT Client
+- `s3_optimized_transfer.py`: Tests the optimized S3 transfer configuration with and without acceleration
 
 ## Dependencies
 
