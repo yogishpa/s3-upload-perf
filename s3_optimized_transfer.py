@@ -382,16 +382,6 @@ def generate_report(results, file_size):
         avg = averages[test_name]
         logger.info(f"{test_name:<40} {avg['avg_duration']:<20.2f} {avg['avg_throughput']:<20.2f}")
     
-    # Compare with previous S3 performance test results
-    logger.info("\n=== COMPARISON WITH PREVIOUS PERFORMANCE TESTS ===\n")
-    logger.info("Previous standard S3 direct upload: 7.00 MB/s")
-    logger.info("Previous standard S3 direct download: 7.58 MB/s")
-    logger.info("Previous S3 Transfer Manager upload: 4.68 MB/s")
-    logger.info("Previous S3 Transfer Manager download: 7.26 MB/s")
-    logger.info("Previous S3 CRT Client upload: 6.38 MB/s")
-    logger.info("Previous S3 CRT Client download: 30.90 MB/s")
-    logger.info("Previous DataSync simulated upload: 15.00 MB/s")
-    logger.info("Previous DataSync simulated download: 18.00 MB/s")
     
     # Calculate improvement percentages
     upload_no_accel = averages['optimized_upload_without_acceleration']['avg_throughput']
@@ -405,36 +395,27 @@ def generate_report(results, file_size):
         vs_direct = ((upload_no_accel - 7.00) / 7.00) * 100
         vs_datasync = ((upload_no_accel - 15.00) / 15.00) * 100
         logger.info(f"\nOptimized upload WITHOUT acceleration: {upload_no_accel:.2f} MB/s")
-        logger.info(f"  - {vs_crt:.2f}% compared to S3 CRT Client")
-        logger.info(f"  - {vs_direct:.2f}% compared to standard S3 direct")
-        logger.info(f"  - {vs_datasync:.2f}% compared to simulated DataSync")
-    
+
     if upload_with_accel > 0:
         vs_crt = ((upload_with_accel - 6.38) / 6.38) * 100
         vs_direct = ((upload_with_accel - 7.00) / 7.00) * 100
         vs_datasync = ((upload_with_accel - 15.00) / 15.00) * 100
         logger.info(f"\nOptimized upload WITH acceleration: {upload_with_accel:.2f} MB/s")
-        logger.info(f"  - {vs_crt:.2f}% compared to S3 CRT Client")
-        logger.info(f"  - {vs_direct:.2f}% compared to standard S3 direct")
-        logger.info(f"  - {vs_datasync:.2f}% compared to simulated DataSync")
+
     
     if download_no_accel > 0:
         vs_crt = ((download_no_accel - 30.90) / 30.90) * 100
         vs_direct = ((download_no_accel - 7.58) / 7.58) * 100
         vs_datasync = ((download_no_accel - 18.00) / 18.00) * 100
         logger.info(f"\nOptimized download WITHOUT acceleration: {download_no_accel:.2f} MB/s")
-        logger.info(f"  - {vs_crt:.2f}% compared to S3 CRT Client")
-        logger.info(f"  - {vs_direct:.2f}% compared to standard S3 direct")
-        logger.info(f"  - {vs_datasync:.2f}% compared to simulated DataSync")
+
     
     if download_with_accel > 0:
         vs_crt = ((download_with_accel - 30.90) / 30.90) * 100
         vs_direct = ((download_with_accel - 7.58) / 7.58) * 100
         vs_datasync = ((download_with_accel - 18.00) / 18.00) * 100
         logger.info(f"\nOptimized download WITH acceleration: {download_with_accel:.2f} MB/s")
-        logger.info(f"  - {vs_crt:.2f}% compared to S3 CRT Client")
-        logger.info(f"  - {vs_direct:.2f}% compared to standard S3 direct")
-        logger.info(f"  - {vs_datasync:.2f}% compared to simulated DataSync")
+
     
     logger.info("\n=== END OF REPORT ===\n")
 
