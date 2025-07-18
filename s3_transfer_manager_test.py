@@ -299,12 +299,7 @@ def generate_report(results, file_size):
         avg = averages[test_name]
         logger.info(f"{test_name:<30} {avg['avg_duration']:<20.2f} {avg['avg_throughput']:<20.2f}")
     
-    # Compare with previous S3 performance test results
-    logger.info("\n=== COMPARISON WITH PREVIOUS PERFORMANCE TESTS ===\n")
-    logger.info("Previous best S3 upload method: accelerated_multipart_upload with 8.63 MB/s")
-    logger.info("Previous best S3 download method: direct_memory_download with 9.62 MB/s")
-    logger.info("Previous DataSync simulated upload: 15.00 MB/s")
-    logger.info("Previous DataSync simulated download: 18.00 MB/s")
+
     
     s3_tm_upload_speed = averages['s3_transfer_manager_upload']['avg_throughput']
     s3_tm_download_speed = averages['s3_transfer_manager_download']['avg_throughput']
@@ -313,15 +308,13 @@ def generate_report(results, file_size):
         upload_improvement_s3 = ((s3_tm_upload_speed - 8.63) / 8.63) * 100
         upload_comparison_datasync = ((s3_tm_upload_speed - 15.00) / 15.00) * 100
         logger.info(f"\nS3 Transfer Manager upload speed: {s3_tm_upload_speed:.2f} MB/s")
-        logger.info(f"  - {upload_improvement_s3:.2f}% compared to best previous S3 method")
-        logger.info(f"  - {upload_comparison_datasync:.2f}% compared to simulated DataSync")
+
     
     if s3_tm_download_speed > 0:
         download_improvement_s3 = ((s3_tm_download_speed - 9.62) / 9.62) * 100
         download_comparison_datasync = ((s3_tm_download_speed - 18.00) / 18.00) * 100
         logger.info(f"\nS3 Transfer Manager download speed: {s3_tm_download_speed:.2f} MB/s")
-        logger.info(f"  - {download_improvement_s3:.2f}% compared to best previous S3 method")
-        logger.info(f"  - {download_comparison_datasync:.2f}% compared to simulated DataSync")
+
     
     logger.info("\n=== END OF REPORT ===\n")
 
