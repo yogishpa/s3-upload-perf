@@ -451,14 +451,7 @@ def generate_report(results, file_size):
         avg = averages[test_name]
         logger.info(f"{test_name:<30} {avg['avg_duration']:<20.2f} {avg['avg_throughput']:<20.2f} {avg['max_throughput']:<20.2f}")
     
-    # Compare with previous S3 performance test results
-    logger.info("\n=== COMPARISON WITH PREVIOUS PERFORMANCE TESTS ===\n")
-    logger.info("Previous standard S3 direct upload: 7.00 MB/s")
-    logger.info("Previous standard S3 direct download: 7.58 MB/s")
-    logger.info("Previous S3 Transfer Manager upload: 4.68 MB/s")
-    logger.info("Previous S3 Transfer Manager download: 7.26 MB/s")
-    logger.info("Previous S3 CRT Client upload: 6.38 MB/s")
-    logger.info("Previous S3 CRT Client download: 30.90 MB/s")
+
     
     # Calculate improvement percentages
     optimized_upload_speed = averages['optimized_upload']['avg_throughput']
@@ -469,24 +462,20 @@ def generate_report(results, file_size):
         vs_direct = ((optimized_upload_speed - 7.00) / 7.00) * 100
         vs_crt = ((optimized_upload_speed - 6.38) / 6.38) * 100
         logger.info(f"\nOptimized upload speed: {optimized_upload_speed:.2f} MB/s")
-        logger.info(f"  - {vs_direct:.2f}% compared to standard S3 direct")
-        logger.info(f"  - {vs_crt:.2f}% compared to S3 CRT Client")
+
     
     if optimized_download_speed > 0:
         vs_direct = ((optimized_download_speed - 7.58) / 7.58) * 100
         vs_crt = ((optimized_download_speed - 30.90) / 30.90) * 100
         logger.info(f"\nOptimized download speed: {optimized_download_speed:.2f} MB/s")
-        logger.info(f"  - {vs_direct:.2f}% compared to standard S3 direct")
-        logger.info(f"  - {vs_crt:.2f}% compared to S3 CRT Client")
+
     
     if optimized_range_download_speed > 0:
         vs_direct = ((optimized_range_download_speed - 7.58) / 7.58) * 100
         vs_crt = ((optimized_range_download_speed - 30.90) / 30.90) * 100
         vs_optimized = ((optimized_range_download_speed - optimized_download_speed) / optimized_download_speed) * 100
         logger.info(f"\nOptimized range download speed: {optimized_range_download_speed:.2f} MB/s")
-        logger.info(f"  - {vs_direct:.2f}% compared to standard S3 direct")
-        logger.info(f"  - {vs_crt:.2f}% compared to S3 CRT Client")
-        logger.info(f"  - {vs_optimized:.2f}% compared to optimized download")
+
     
     logger.info("\n=== COST ANALYSIS ===\n")
     logger.info("This implementation avoids S3 Transfer Acceleration costs ($0.04/GB) while still achieving excellent performance.")
